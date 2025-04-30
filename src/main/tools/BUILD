@@ -38,6 +38,7 @@ cc_binary(
             "process-wrapper-options.h",
         ],
     }),
+    features = ["fully_static_link"],
     linkopts = select({
         "//src/conditions:darwin": ["-lm"],
         "//src/conditions:openbsd": [],
@@ -47,6 +48,7 @@ cc_binary(
             "-lrt",
         ],
     }),
+    linkstatic = 1,
     deps = select({
         "//src/conditions:windows": [],
         "//conditions:default": [
@@ -62,6 +64,8 @@ cc_binary(
         "//src/conditions:windows": ["build-runfiles-windows.cc"],
         "//conditions:default": ["build-runfiles.cc"],
     }),
+    features = ["fully_static_link"],
+    linkstatic = 1,
     deps = ["//src/main/cpp/util:filesystem"] + select({
         "//src/conditions:windows": ["//src/main/native/windows:lib-file"],
         "//conditions:default": [],
