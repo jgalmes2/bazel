@@ -103,6 +103,7 @@ cc_binary(
         "//src/conditions:windows": ["/wd4018"],
         "//conditions:default": ["-Wno-sign-compare"],
     }),
+    features = ["fully_static_link"],
     linkopts = select({
         "//src/conditions:darwin": [
         ],
@@ -119,6 +120,7 @@ cc_binary(
             "-ldl",
         ],
     }),
+    linkstatic = 1,
     visibility = ["//src:__pkg__"],
     deps = [
         ":archive_utils",
