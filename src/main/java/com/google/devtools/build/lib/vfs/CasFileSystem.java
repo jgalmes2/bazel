@@ -19,16 +19,32 @@ import com.google.devtools.build.lib.profiler.ProfilerTask;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
+import com.google.common.flogger.GoogleLogger;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 /**
  * A FileSystem that uses extended file attributes to obtain a files's digest.
  */
 @ThreadSafe
 public class CasFileSystem extends JavaIoFileSystem {
+  // private static final GoogleLogger logger = GoogleLogger.forEnclosingClass();
+  private static final Logger logger = Logger.getLogger(CasFileSystem.class.getName());
+
   public CasFileSystem(DigestHashFunction hashFunction) {
     super(hashFunction);
+
+    try {
+        FileHandler fileHandler = new FileHandler("/src/out/cas_file_system.log", true);
+        SimpleFormatter formatter = new SimpleFormatter();
+        fileHandler.setFormatter(formatter);
+        logger.addHandler(fileHandler);
+    } catch (IOException e) {
+    }
   }
 
   @Override
@@ -36,22 +52,43 @@ public class CasFileSystem extends JavaIoFileSystem {
     String name = path.toString();
     long startTime = Profiler.nanoTimeMaybe();
 
-    UserDefinedFileAttributeView userAttributes =
-            Files.getFileAttributeView(getNioPath(path),
-                    UserDefinedFileAttributeView.class);
-    if (userAttributes != null) {
-        String attributeName = "casfs_hash";
-        int size = userAttributes.size(attributeName);
-        ByteBuffer buffer = ByteBuffer.allocate(size);
-        userAttributes.read(attributeName, buffer);
-        buffer.flip();
-        return buffer.array();
-    } else {
-        try {
-            return super.getDigest(path);
-        } finally {
-            profiler.logSimpleTask(startTime, ProfilerTask.VFS_MD5, name);
+    try {
+        UserDefinedFileAttributeView userAttributes =
+                Files.getFileAttributeView(getNioPath(path),
+                        UserDefinedFileAttributeView.class);
+        if (userAttributes != null) {
+            String attributeName = "casfs_hash";
+            int size = userAttributes.size(attributeName);
+            ByteBuffer buffer = ByteBuffer.allocate(size);
+            userAttributes.read(attributeName, buffer);
+            buffer.flip();
+
+            // logger.atInfo().log(
+            //     "getDigest(%s) = %s",
+            //     getNioPath(path),
+            //     Charset.defaultCharset().decode(buffer).toString());
+            logger.info(
+                "getDigest: " +
+                getNioPath(path) + " " +
+                Charset.defaultCharset().decode(buffer).toString());
+
+            return buffer.array();
+        } else {
+            // logger.atSevere().log(
+            //     "getFileAtrributeView(%s) failed",
+            //     getNioPath(path));
+            logger.info(
+                "getFileAtrributeView(%s) failed: " +
+                getNioPath(path));
         }
+    } catch (Exception e) {
+        logger.warning(e.toString());
+    }
+
+    try {
+        return super.getDigest(path);
+    } finally {
+        profiler.logSimpleTask(startTime, ProfilerTask.VFS_MD5, name);
     }
   }
 }

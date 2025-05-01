@@ -26,6 +26,7 @@ import com.google.devtools.build.lib.unix.UnixFileSystem;
 import com.google.devtools.build.lib.util.AbruptExitException;
 import com.google.devtools.build.lib.util.DetailedExitCode;
 import com.google.devtools.build.lib.util.OS;
+import com.google.devtools.build.lib.vfs.CasFileSystem;
 import com.google.devtools.build.lib.vfs.DigestHashFunction;
 import com.google.devtools.build.lib.vfs.DigestHashFunction.DigestFunctionConverter;
 import com.google.devtools.build.lib.vfs.FileSystem;
@@ -91,7 +92,8 @@ public class BazelFileSystemModule extends BlazeModule {
       if (JniLoader.isJniAvailable()) {
         fs = new UnixFileSystem(digestHashFunction, options.unixDigestHashAttributeName);
       } else {
-        fs = new JavaIoFileSystem(digestHashFunction);
+        // fs = new JavaIoFileSystem(digestHashFunction);
+        fs = new CasFileSystem(digestHashFunction);
       }
     }
     return ModuleFileSystem.create(fs);
