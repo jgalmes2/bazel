@@ -71,9 +71,15 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
+import com.google.common.flogger.GoogleLogger;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 /** Output service implementation for the remote build with local output service daemon. */
 public class BazelOutputService implements OutputService {
+  private static final Logger logger =
+          Logger.getLogger(BazelOutputService.class.getName());
 
   private final String outputBaseId;
   private final Supplier<Path> execRootSupplier;
@@ -113,6 +119,15 @@ public class BazelOutputService implements OutputService {
     this.retrier = retrier;
     this.channel = channel;
     this.lastBuildId = lastBuildId;
+    try {
+        FileHandler fileHandler = new FileHandler(
+            "/src/out/bazel_output_service.log", true);
+        SimpleFormatter formatter = new SimpleFormatter();
+        fileHandler.setFormatter(formatter);
+        logger.addHandler(fileHandler);
+        logger.info("BazelOutputService()");
+    } catch (IOException e) {
+    }
   }
 
   public void shutdown() {
@@ -193,6 +208,7 @@ public class BazelOutputService implements OutputService {
   public ModifiedFileSet startBuild(
       EventHandler eventHandler, UUID buildId, boolean finalizeActions)
       throws AbruptExitException, InterruptedException {
+    logger.info("startBuild()");
     checkState(this.buildId == null, "this.buildId must be null");
     this.buildId = buildId.toString();
     var outputPathPrefix = PathFragment.create(remoteOutputServiceOutputPathPrefix);

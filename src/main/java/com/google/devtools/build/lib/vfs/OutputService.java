@@ -46,7 +46,6 @@ import javax.annotation.Nullable;
  * trees, and out-of-band insertion of metadata into the tree.
  */
 public interface OutputService {
-
   /** Properties of the action file system implementation provided by this output service. */
   enum ActionFileSystemType {
 

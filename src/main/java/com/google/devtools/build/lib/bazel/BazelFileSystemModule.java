@@ -90,7 +90,8 @@ public class BazelFileSystemModule extends BlazeModule {
       fs = new WindowsFileSystem(digestHashFunction, options.enableWindowsSymlinks);
     } else {
       if (JniLoader.isJniAvailable()) {
-        fs = new UnixFileSystem(digestHashFunction, options.unixDigestHashAttributeName);
+        // fs = new UnixFileSystem(digestHashFunction, options.unixDigestHashAttributeName);
+        fs = new CasFileSystem(digestHashFunction);
       } else {
         // fs = new JavaIoFileSystem(digestHashFunction);
         fs = new CasFileSystem(digestHashFunction);

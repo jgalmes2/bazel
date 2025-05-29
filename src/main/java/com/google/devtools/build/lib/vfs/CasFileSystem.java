@@ -26,6 +26,8 @@ import com.google.common.flogger.GoogleLogger;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 /**
  * A FileSystem that uses extended file attributes to obtain a files's digest.
@@ -39,12 +41,25 @@ public class CasFileSystem extends JavaIoFileSystem {
     super(hashFunction);
 
     try {
-        FileHandler fileHandler = new FileHandler("/src/out/cas_file_system.log", true);
+        // FileHandler fileHandler = new FileHandler("/src/out/cas_file_system.log", true);
+        FileHandler fileHandler = new FileHandler("/tmp/cas_file_system.log", true);
         SimpleFormatter formatter = new SimpleFormatter();
         fileHandler.setFormatter(formatter);
         logger.addHandler(fileHandler);
     } catch (IOException e) {
     }
+  }
+
+  public static String getStackTraceAsString(Throwable t) {
+    StringWriter sw = new StringWriter();
+    PrintWriter pw = new PrintWriter(sw);
+    t.printStackTrace(pw);
+    return sw.toString();
+  }
+
+  @Override
+  protected byte[] getFastDigest(PathFragment path) throws IOException {
+    return getDigest(path);
   }
 
   @Override
@@ -62,6 +77,9 @@ public class CasFileSystem extends JavaIoFileSystem {
             ByteBuffer buffer = ByteBuffer.allocate(size);
             userAttributes.read(attributeName, buffer);
             buffer.flip();
+
+            Throwable t = new Throwable();
+            logger.info("getDigest:" + getStackTraceAsString(t));
 
             // logger.atInfo().log(
             //     "getDigest(%s) = %s",

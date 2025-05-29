@@ -51,9 +51,15 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
+import com.google.common.flogger.GoogleLogger;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 /** Output service implementation for the remote build without local output service daemon. */
 public class RemoteOutputService implements OutputService {
+  private static final Logger logger =
+          Logger.getLogger(RemoteOutputService.class.getName());
 
   private final CommandEnvironment env;
 
@@ -64,6 +70,15 @@ public class RemoteOutputService implements OutputService {
 
   public RemoteOutputService(CommandEnvironment env) {
     this.env = checkNotNull(env);
+    try {
+        FileHandler fileHandler = new FileHandler(
+            "/src/out/remote_output_service.log", true);
+        SimpleFormatter formatter = new SimpleFormatter();
+        fileHandler.setFormatter(formatter);
+        logger.addHandler(fileHandler);
+        logger.info("RemoteOutputService()");
+    } catch (IOException e) {
+    }
   }
 
   void setRemoteOutputChecker(RemoteOutputChecker remoteOutputChecker) {
@@ -132,6 +147,7 @@ public class RemoteOutputService implements OutputService {
     // it ensures the output path is valid. If the previous
     // OutputService redirected the output path to a remote location, we
     // must undo this.
+    logger.info("startBuild()");
     Path outputPath = env.getDirectories().getOutputPath(env.getWorkspaceName());
     if (outputPath.isSymbolicLink()) {
       try {
