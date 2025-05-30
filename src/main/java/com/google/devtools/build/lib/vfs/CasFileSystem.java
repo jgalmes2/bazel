@@ -59,7 +59,20 @@ public class CasFileSystem extends JavaIoFileSystem {
 
   @Override
   protected byte[] getFastDigest(PathFragment path) throws IOException {
-    return getDigest(path);
+    byte[] hexDigest = getDigest(path);
+    int len = hexDigest.length;
+    if (len == 41) {
+        byte[] binDigest = new byte[len / 2];
+        for (int i = 0; i < len - 1; i += 2) {
+            binDigest[i / 2] = (byte) (
+                (Character.digit(hexDigest[i], 16) << 4) +
+                Character.digit(hexDigest[i+1], 16));
+            
+        }
+        return binDigest;
+    } else {
+        return hexDigest;
+    }
   }
 
   @Override
@@ -85,6 +98,7 @@ public class CasFileSystem extends JavaIoFileSystem {
             //     "getDigest(%s) = %s",
             //     getNioPath(path),
             //     Charset.defaultCharset().decode(buffer).toString());
+            logger.info("getDigest: size: " + size);
             logger.info(
                 "getDigest: " +
                 getNioPath(path) + " " +
