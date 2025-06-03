@@ -17,6 +17,8 @@ import com.google.devtools.build.lib.concurrent.ThreadSafety.ThreadSafe;
 import com.google.devtools.build.lib.profiler.Profiler;
 import com.google.devtools.build.lib.profiler.ProfilerTask;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -28,6 +30,7 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import com.google.common.hash.HashCode;
 
 /**
  * A FileSystem that uses extended file attributes to obtain a files's digest.
@@ -36,9 +39,11 @@ import java.io.StringWriter;
 public class CasFileSystem extends JavaIoFileSystem {
   // private static final GoogleLogger logger = GoogleLogger.forEnclosingClass();
   private static final Logger logger = Logger.getLogger(CasFileSystem.class.getName());
+  private final DigestHashFunction hashFunction;
 
   public CasFileSystem(DigestHashFunction hashFunction) {
     super(hashFunction);
+    this.hashFunction = hashFunction;
 
     try {
         // FileHandler fileHandler = new FileHandler("/src/out/cas_file_system.log", true);
@@ -117,9 +122,17 @@ public class CasFileSystem extends JavaIoFileSystem {
         logger.warning(e.toString());
     }
 
+    InputStream is = null;
+
     try {
-        return super.getDigest(path);
+        byte[] fileData = new byte[(int) getFileSize(path, true)];
+        is = Files.newInputStream(getNioPath(path));
+        is.read(fileData);
+        return hashFunction.getHashFunction().hashBytes(fileData).asBytes();
     } finally {
+        if (is != null) {
+            is.close();
+        }
         profiler.logSimpleTask(startTime, ProfilerTask.VFS_MD5, name);
     }
   }

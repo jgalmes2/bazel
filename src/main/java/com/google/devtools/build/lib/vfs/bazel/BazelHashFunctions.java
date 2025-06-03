@@ -20,23 +20,30 @@ import javax.annotation.Nullable;
 
 /** Bazel specific {@link DigestHashFunction}s. */
 public final class BazelHashFunctions {
-  @Nullable public static final DigestHashFunction BLAKE3;
+  // @Nullable public static final DigestHashFunction BLAKE3;
+  @Nullable public static final DigestHashFunction GITSHA1;
 
   static {
-    DigestHashFunction hashFunction = null;
+    // TODO: Add GITSHA1 to supported digest hash functions.
+    // For now, replace BLAKE3 with our implementation of GITSHA1.
 
-    if (JniLoader.isJniAvailable()) {
-      try {
-        Security.addProvider(new Blake3Provider());
-        hashFunction = DigestHashFunction.register(Blake3HashFunction.INSTANCE, "BLAKE3");
-      } catch (UnsatisfiedLinkError ignored) {
-        // This can happen if bazel was compiled manually (with compile.sh),
-        // on windows. In that case jni is available, but missing the blake3
-        // symbols necessary to register the hasher.
-      }
-    }
+    // DigestHashFunction hashFunction = null;
 
-    BLAKE3 = hashFunction;
+    // if (JniLoader.isJniAvailable()) {
+    //   try {
+    //     Security.addProvider(new Blake3Provider());
+    //     hashFunction = DigestHashFunction.register(Blake3HashFunction.INSTANCE, "BLAKE3");
+    //   } catch (UnsatisfiedLinkError ignored) {
+    //     // This can happen if bazel was compiled manually (with compile.sh),
+    //     // on windows. In that case jni is available, but missing the blake3
+    //     // symbols necessary to register the hasher.
+    //   }
+    // }
+
+    // BLAKE3 = hashFunction;
+
+    Security.addProvider(new Blake3Provider());
+    GITSHA1 = DigestHashFunction.register(GitSha1HashFunction.INSTANCE, "BLAKE3");
   }
 
   public static void ensureRegistered() {}
