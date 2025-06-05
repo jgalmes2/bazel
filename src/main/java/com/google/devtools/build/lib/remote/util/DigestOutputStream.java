@@ -44,6 +44,11 @@ public final class DigestOutputStream extends FilterOutputStream {
     this.hasher = checkNotNull(hashFunction.newHasher());
   }
 
+  public DigestOutputStream(HashFunction hashFunction, OutputStream out, long sizeBytes) {
+    super(checkNotNull(out));
+    this.hasher = checkNotNull(hashFunction.newHasher((int) sizeBytes));
+  }
+
   @Override
   public void write(int b) throws IOException {
     size++;

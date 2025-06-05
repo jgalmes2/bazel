@@ -341,7 +341,7 @@ public class GrpcCacheClient implements RemoteCacheClient, MissingDigestsFinder 
 
     @Nullable Supplier<Digest> digestSupplier = null;
     if (options.remoteVerifyDownloads) {
-      DigestOutputStream digestOut = digestUtil.newDigestOutputStream(out);
+      DigestOutputStream digestOut = digestUtil.newDigestOutputStream(out, digest.getSizeBytes());
       digestSupplier = digestOut::digest;
       out = digestOut;
     }

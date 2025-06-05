@@ -151,6 +151,10 @@ public class DigestUtil {
     return new DigestOutputStream(hashFn.getHashFunction(), out);
   }
 
+  public DigestOutputStream newDigestOutputStream(OutputStream out, long sizeBytes) {
+    return new DigestOutputStream(hashFn.getHashFunction(), out, sizeBytes);
+  }
+
   public static String toString(Digest digest) {
     return digest.getHash() + "/" + digest.getSizeBytes();
   }

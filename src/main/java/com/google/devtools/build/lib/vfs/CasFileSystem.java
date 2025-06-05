@@ -64,6 +64,7 @@ public class CasFileSystem extends JavaIoFileSystem {
 
   @Override
   protected byte[] getFastDigest(PathFragment path) throws IOException {
+    logger.info("getFastDigest: " + path);
     byte[] hexDigest = getDigest(path);
     int len = hexDigest.length;
     if (len == 41) {
@@ -82,6 +83,7 @@ public class CasFileSystem extends JavaIoFileSystem {
 
   @Override
   protected byte[] getDigest(PathFragment path) throws IOException {
+    logger.info("getDigest: path " + path);
     String name = path.toString();
     long startTime = Profiler.nanoTimeMaybe();
 
